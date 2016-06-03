@@ -1,0 +1,13 @@
+16.05.2016
+ver 0.0.1
+-Project starts here
+-Setting up the scene
+-Unit template created
+-Player has now units list.
+-Giving orders works finally
+-Units perform movement order
+
+17.05.2016
+ver 0.0.2
+-Unit speed is editable
+-Camera scrolling is working
