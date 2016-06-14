@@ -11,3 +11,9 @@ ver 0.0.1
 ver 0.0.2
 -Unit speed is editable
 -Camera scrolling is working
+
+14.06.2016
+ver 0.0.3
+-Selecting by drawing freaking rectangle!
+-Works in 100%
+-Attack order in progres
