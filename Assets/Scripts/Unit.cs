@@ -7,36 +7,58 @@ public class Unit : MonoBehaviour {
     public float Speed;
     public float AttackRange;
     public string Owner;
+    public GameObject BulletType;
+    //public float value;
+
+    [HideInInspector]
     public GameObject Selected;
-    GameObject Target;
-    bool isSelected;
+    public GameObject Target;
+   // bool isSelected;
     NavMeshAgent Navigator;
     bool attacking;
+    public bool targetInRange;
+
+    
 
 
     void Start()
     {
+        //StartCoroutine("Fire");
+        targetInRange = false;
         attacking = false;
         Selected.SetActive(false);
         Navigator = GetComponent<NavMeshAgent>();
-        isSelected = false;
+        
 
         Navigator.speed = Speed;
     }
 	void Update()
     {
-        isSelected = IsWithinSelectionBounds();
-        if (isSelected) UnitListControll();
-    }
-    void OnMouseDown()
-    {
-        UnitListControll();
+        
+        if (IsWithinSelectionBounds()) UnitListControll();
+        if(Input.GetMouseButton(0)&&Owner== PlayerController._PlayerName)
+        {
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+            if (GetComponent<Collider>().Raycast(ray, out hit, Mathf.Infinity)) { UnitListControll(); }
+        }
+
         if (Input.GetMouseButton(1) && Owner != PlayerController._PlayerName)
         {
-            Debug.Log("Attack");
+            RaycastHit hit;
+            Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+
+            if (GetComponent<Collider>().Raycast(ray, out hit, Mathf.Infinity)){ SetMeAsTarget(); }
+
+            
         }
-       
     }
+ /*   void OnMouseDown()
+    {
+        UnitListControll();
+        
+       
+    }*/
     void UnitListControll()
     {
        
@@ -48,28 +70,61 @@ public class Unit : MonoBehaviour {
         
         
     }
+    public void SetFacing()
+    {
+        transform.LookAt(Target.transform.position);
+    }
+    public void Attack()
+    {
+        Debug.Log("Yaaaahoooo!");
+        if (targetInRange) StartCoroutine("Fire");
+        else { Move(Target.transform.position); }
+    }
+    Quaternion setRotation()
+    {
+        float a = Target.transform.position.z - transform.position.z;
+        if (a < 0) a *= -1;
+        float b = Target.transform.position.x - transform.position.x;
+        if (b < 0) b *= -1;
+        float c = Mathf.Sqrt(Mathf.Pow(a, 2) + Mathf.Pow(b, 2));
+        float spinValue = (a / c)*90f;//sinus
+       
+        Debug.Log(spinValue);
+        return Quaternion.Euler(transform.rotation.x, transform.rotation.y - spinValue, transform.rotation.z);
+    }
+    public IEnumerator Fire()
+    {
+        Quaternion rot = setRotation();
+        //Vector3 rot = new Vector3(transform.rotation.x, transform.rotation.y + 45, transform.rotation.z);
+        Vector3 pos = new Vector3(transform.position.x,
+            transform.position.y,
+            transform.position.z);
+
+        Instantiate(BulletType, pos, rot);
+        yield return new WaitForSeconds(3f);
+        SetFacing();
+        StartCoroutine("Fire");
+
+
+    }
     public void Move(Vector3 Target)
     {
         
         Navigator.destination = Target;
         Debug.Log("Going to target " + Target.ToString() );
     }
-    public void Attack(GameObject _Target)
+    public void StopIfTargetInRange()
     {
-        if (Target == null) Target = _Target;
-        if (!attacking&&Target!=null) {StartCoroutine("Fire"); }
-        
+        Navigator.Stop();
     }
-    public IEnumerator Fire()
+    void SetMeAsTarget()
     {
-        
-        attacking = true;
-        Debug.Log("Boom");
-        yield return new WaitForSeconds(3f);
-        attacking = false;
-
-        if(Target!=null)Attack(Target);
+      
+        PlayerController._Target=gameObject;
+        Debug.Log("Target is "+Name);
+        PlayerController.AttackOrder(gameObject);
     }
+    
 
     void AddUnitToList()
     {

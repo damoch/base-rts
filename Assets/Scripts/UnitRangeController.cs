@@ -3,18 +3,26 @@ using System.Collections;
 
 public class UnitRangeController : MonoBehaviour
 {
-
+    GameObject DetectedUnit;
+    Unit Parent;
+    void Start()
+    {
+        Parent = GetComponentInParent<Unit>();
+    }
     void OnTriggerEnter(Collider col)
     {
         Debug.Log(col.gameObject.tag);
         if (col.tag == "Unit")
         {
-            GameObject DetectedUnit = col.gameObject;
-            //Debug.Log("sasasa");
-            if (DetectedUnit.GetComponent<Unit>().Owner != PlayerController._PlayerName) GetComponentInParent<Unit>().Attack(DetectedUnit);
+            if (col.gameObject.GetComponent<Unit>().Owner !=Parent.Owner)
+            {
+                Debug.Log("Hostile spotted!");
+                DetectedUnit = col.gameObject;
+                if (Parent.Target == DetectedUnit&&!Parent.targetInRange) { Parent.SetFacing(); Debug.Log("Gotya!"); Parent.StopIfTargetInRange();Parent.targetInRange = true; }
+                else { }
+            }
+            
         }
-        /* if(GetComponent<Collider>().gameObject.GetComponent<Unit>().Owner!=PlayerController._PlayerName)
-         GetComponentInParent<Unit>().Attack(GetComponent<Collider>().gameObject);*/
     }
     void OnTriggerExit(Collider col)
     {
@@ -23,8 +31,20 @@ public class UnitRangeController : MonoBehaviour
         if (col.tag == "Unit")
         {
             //Debug.Log("sasasa");
-            if (col.gameObject.GetComponent<Unit>().Owner != PlayerController._PlayerName) GetComponentInParent<Unit>().Attack(null);
+           // if (col.gameObject.GetComponent<Unit>().Owner != PlayerController._PlayerName) GetComponentInParent<Unit>().Attack(null);
+           if(col.gameObject== (Parent.Target))
+            {
+                Parent.Target = null;
+                Parent.targetInRange=false;
+            }
 
+        }
+    }
+    void Update()
+    {
+        if (Input.GetMouseButton(0))
+        {
+            PlayerController.ClearUnitsList();
         }
     }
 }

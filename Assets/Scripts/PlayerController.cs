@@ -14,10 +14,11 @@ public class PlayerController : MonoBehaviour {
     //Not visible in inspector
     public static List<Unit> selectedUnits = new List<Unit>();
     GameObject Map;
+    static GameObject _Map;
     Camera PlayerCamera;
     Rect SelectionBox;
     public static bool SelectionBoxActive;
-   
+    public static GameObject _Target;
     //Drawing shit
     static Texture2D _whiteTexture;
     
@@ -28,6 +29,7 @@ public class PlayerController : MonoBehaviour {
     void Start () {
         selectedUnits.Clear();
         Map = GameObject.Find("Terrain");
+        _Map = Map;
         PlayerCamera = Camera.main;
 
         SelectionBoxActive = false;
@@ -37,7 +39,7 @@ public class PlayerController : MonoBehaviour {
     }
 	
 	void Update () {
-        if (Input.GetMouseButtonDown(1)) GiveOrder();
+        if (Input.GetMouseButtonDown(1)) MovementOrder();
         //if(Input.GetMouseButtonDown(1)) AttackOrder();
         //camera height
         /*  if(Input.GetAxis("Mouse ScrollWheel") < 0)
@@ -80,29 +82,37 @@ public class PlayerController : MonoBehaviour {
             Debug.Log("List Empty!");
         }
     }
-    void GiveOrder()
+   
+    public static void AttackOrder(GameObject _Target)
     {
+        Debug.Log("Kill them fuckers");
+       // MovementOrder();
+        foreach(Unit unit in selectedUnits)
+        {
+            unit.Target = _Target;
+            // if(unit.targetInRange==false)unit.Move(_Target.transform.position);
+            unit.Attack();
+
+        }
+
+    }
+    public static void MovementOrder()
+    {
+        Debug.Log("Moving!");
+        //Giving order to each selected unit
         Vector3 OrderCoordinates = new Vector3(0, 0, 0);
         RaycastHit hit;
 
 
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        if (Map.GetComponent<Collider>().Raycast(ray, out hit, Mathf.Infinity))
+        if (_Map.GetComponent<Collider>().Raycast(ray, out hit, Mathf.Infinity))
         {
-            MovementOrder(hit.point);
-        }
-    }
-    void AttackOrder()
-    {
-        Debug.Log("Kill them fuckers");
-    }
-    void MovementOrder(Vector3 OrderCoordinates)
-    {
-        Debug.Log("Moving!");
-        //Giving order to each selected unit
-        foreach (Unit unit in selectedUnits)
-        {
-            unit.Move(OrderCoordinates);
+            OrderCoordinates = hit.point;
+            foreach (Unit unit in selectedUnits)
+            {
+                
+                unit.Move(OrderCoordinates);
+            }
         }
     }
     public static Texture2D WhiteTexture
